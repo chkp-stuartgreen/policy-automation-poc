@@ -80,16 +80,19 @@ group = {}
 group['name'] = 'SOURCE_GROUP1'
 group['members'] = {'add': ['host_10.0.0.1', 'host_10.0.2.1']}
 apiCall.send_command('set-group', data=group)
+apiCall.publish()
 
 group = {}
 group['name'] = 'DEST_GROUP1'
 group['members'] = {'add': ['host_192.168.1.1']}
 apiCall.send_command('set-group', data=group)
+apiCall.publish()
 
 group = {}
 group['name'] = 'PORT_GROUP1'
 group['members'] = {'add': ['http']}
 apiCall.send_command('set-service-group', data=group)
+apiCall.publish()
 
 # Create rule 1
 rule = {}
@@ -99,10 +102,14 @@ rule['position']['top'] = "SectionTitle2"
 rule['source'] = ['SOURCE_GROUP1']
 rule['destination'] = ['DEST_GROUP1']
 rule['service'] = ['PORT_GROUP1']
-rule['action'] = {'name': 'Accept'}
-rule['track'] = {'name': 'Log'}
-apiCall.send_command('add-access-rule', data=rule)
-
+rule['action'] = 'accept'
+rule['track'] = {'type': 'log'}
+rule['name'] = "test rule 1"
+rule['comments'] = "test comment"
+resp = apiCall.send_command('add-access-rule', data=rule)
+print(resp)
 apiCall.publish()
+
+
 
 apiCall.logout()
