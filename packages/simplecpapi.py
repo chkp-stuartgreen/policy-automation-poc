@@ -16,6 +16,7 @@ class CPAPI:
 
         # Create the payload for the HTTP POST request
         # Check for credentials - prefer API key if user and password methods are present too
+        
         if 'api-key' in api_params and api_params['api-key'] != "":
             req_data = {}
             req_data['api-key'] = api_params['api-key']
@@ -29,6 +30,9 @@ class CPAPI:
             print("[ERROR] You didn't supply any credentials. Check you've added your API key or credentials as environment variables")
             raise SystemExit
 
+        # Add domain in if present
+        if 'domain' in api_params:
+            req_data['domain'] = api_params['domain']
         # format data as JSON for the HTTP POST body
         req_data = json.dumps(req_data)
         # Prepare an HTTP request and add the command 'login' to the command section of the URL
@@ -42,8 +46,11 @@ class CPAPI:
                 'Content-Type': 'application/json',
                 'x-chkp-sid': sid
             }
+            self.session_id = json.loads(self.send_command('show-session', data={}))['uid']
         else:
-            print("Error - could not connect to API. Non HTTP 200 status code received")
+            print("[ERROR] Could not connect to API. Non HTTP 200 status code received")
+            print("[ERROR] Output from management server:")
+            print(response.text)
             raise SystemExit
 
     # Generic wrapper for sending commands to the API
@@ -51,6 +58,11 @@ class CPAPI:
         response = requests.request("POST", self.url + command, data=json.dumps(data), headers=self.auth_headers,
                                     verify=False)
         # self.watch_task(json.loads(response.text)['task-id']) # This doesn't work yet - responses can have single task-ids or lists
+        j_response = json.loads(response.text)
+        if 'task-id' in j_response:
+            print("[INFO] Received task-id in response to command. Watching task until completion")
+            resp = self.watch_task(j_response['task-id'])['tasks'][0]['task-details'][0]
+            return json.dumps(resp)
         return response.text
 
     def watch_task(self, task_id):
@@ -63,7 +75,9 @@ class CPAPI:
                 time.sleep(1)
             else:
                 print("[INFO] Task completed")
+                return task_details
                 break
+                
 
     def publish(self):  # Publish action
         data = {}
