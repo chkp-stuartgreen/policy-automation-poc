@@ -61,8 +61,11 @@ class CPAPI:
         j_response = json.loads(response.text)
         if 'task-id' in j_response:
             print("[INFO] Received task-id in response to command. Watching task until completion")
-            resp = self.watch_task(j_response['task-id'])['tasks'][0]['task-details'][0]
-            return json.dumps(resp)
+            resp = self.watch_task(j_response['task-id'])
+            if 'task-details' in resp['tasks'][0]:
+                return json.dumps(resp)
+            else:
+                return json.dumps(resp['tasks'][0])
         return response.text
 
     def watch_task(self, task_id):

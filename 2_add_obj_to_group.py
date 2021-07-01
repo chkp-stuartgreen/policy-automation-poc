@@ -30,6 +30,10 @@ else:
 
 apiCall = CPAPI(mgmt_params)
 
+# Get current previous session
+resp = json.loads(apiCall.send_command('show-sessions', data={'limit': 1, 'offset': 1, 'view-published-sessions': 'true'}))
+prev_session = resp['objects'][0]['uid']
+
 #Create hosts
 batch = {}
 batch['objects'] = []
@@ -45,20 +49,28 @@ for ip in ips_to_create:
     batch_hosts['list'].append(data)
 batch['objects'].append(batch_hosts)
 
-#resp = apiCall.send_command('add-objects-batch', data=batch)
-#apiCall.publish()
-
+resp = apiCall.send_command('add-objects-batch', data=batch)
 
 # Populate groups
 group = {}
 group['name'] = 'SOURCE_GROUP1'
 group['members'] = {'add': ['host_10.0.4.1']}
-#apiCall.send_command('set-group', data=group)
+apiCall.send_command('set-group', data=group)
 
-resp = apiCall.send_command('show-changes', data={})
+apiCall.publish()
+
+print(f"[INFO] Showing changes in session {apiCall.session_id}")
+
+print(apiCall.send_command('show-changes', data={}))
+
+input("[INPUT] Verify 10.0.4.1 is a an object in SOURCE_GROUP1. Press enter to revert changes")
+
+
+#Revert to session before changes to the session 
+resp = apiCall.send_command('revert-to-revision', data={'to-session': prev_session})
 print(resp)
 #resp = apiCall.watch_task(json.loads(resp)['task-id'])
 #print(resp['tasks'][0]['task-details'][0])
-
+print("[INFO] Policy reverted - verify 10.0.4.1 is no longer in SOURCE_GROUP1")
 
 apiCall.logout()
