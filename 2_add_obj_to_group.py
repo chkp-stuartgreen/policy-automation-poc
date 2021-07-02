@@ -1,4 +1,3 @@
-
 import os
 import ipaddress
 import time
@@ -31,7 +30,7 @@ else:
 apiCall = CPAPI(mgmt_params)
 
 # Get current previous session
-resp = json.loads(apiCall.send_command('show-sessions', data={'limit': 1, 'offset': 1, 'view-published-sessions': 'true'}))
+resp = json.loads(apiCall.send_command('show-sessions', data={'limit': 1, 'offset': 0, 'view-published-sessions': 'true'}))
 prev_session = resp['objects'][0]['uid']
 
 #Create hosts

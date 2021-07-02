@@ -47,6 +47,7 @@ class CPAPI:
                 'x-chkp-sid': sid
             }
             self.session_id = json.loads(self.send_command('show-session', data={}))['uid']
+            
         else:
             print("[ERROR] Could not connect to API. Non HTTP 200 status code received")
             print("[ERROR] Output from management server:")
