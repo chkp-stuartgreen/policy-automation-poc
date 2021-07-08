@@ -16,6 +16,7 @@ mgmt_params['scheme'] = 'https'
 mgmt_params['api_ver'] = '1.7'
 mgmt_params['api_path'] = 'web_api'
 mgmt_params['ip'] = os.environ['MGMT_IP']
+mgmt_params['domain'] = 'CMA_2'
 # You only need username + password, OR API key - not both.
 # If you provide both - only the API key will be used
 if 'MGMT_API_KEY' in os.environ:
