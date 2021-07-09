@@ -156,13 +156,13 @@ else:
     raise SystemExit
 
 apiCall = CPAPI(mgmt_params)
-#obj_prefix = "dbp_"
+obj_prefix = "dbp_"
 #result = apiCall.send_command('show-objects', data={})
 # print(result)
-#create_batch_hosts(apiCall)
-#input('Hosts complete - start on rules?')
-#create_batch_rules(apiCall)
-
+create_batch_hosts(apiCall)
+input('Hosts complete - press enter to continue with rules')
+create_batch_rules(apiCall)
+print('Finished')
 #tidy_up_hosts(obj_prefix, apiCall)
-test = apiCall.send_command('show-objects', data={})
-print(test)
+#test = apiCall.send_command('show-objects', data={})
+#print(test)
