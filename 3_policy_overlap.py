@@ -16,7 +16,7 @@ mgmt_params['scheme'] = 'https'
 mgmt_params['api_ver'] = '1.7'
 mgmt_params['api_path'] = 'web_api'
 mgmt_params['ip'] = os.environ['MGMT_IP']
-mgmt_params['domain'] = 'CMA_2'
+mgmt_params['domain'] = 'CMA_5'
 # You only need username + password, OR API key - not both.
 # If you provide both - only the API key will be used
 if 'MGMT_API_KEY' in os.environ:
@@ -38,6 +38,12 @@ apiCall = CPAPI(mgmt_params)
 #print(apiCall.send_command('show-sessions', data={'limit':5, 'view-published-sessions': True}))
 #apiCall.logout
 #exit()
+
+# NOTE - this test requires a gateway object in order for policy validation to succeed. 
+# Make sure there is a gateway object in the policy before proceeding
+
+input("[WARNING] Please check the policy of CMA_5 contains a gateway object otherwise\
+     policy validation will not occur. Check manually and press enter to continue...")
 
 # Grab previous session ID for easier way to remove changes
 
