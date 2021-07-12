@@ -29,11 +29,37 @@ else:
 
 apiCall = CPAPI(mgmt_params)
 
-ssg = {}
-ssg['name'] = 'testGW'
-ssg['ipv4-address'] = '10.20.30.40'
-ssg['one-time-password'] = 'vpn123vpn123'
+def tidy_up_hosts(prefix, apiobj):
+    # Call this function with the object prefix and apiCall object to indiscriminately trash all of the hosts matching that pattern
+    objfilter = {}
+    objfilter['limit'] = 500  # max results - need to page / loop beyond this
+    objfilter['in'] = ['name', prefix]
+    objfilter['type'] = 'host'
+    objects = json.loads(apiobj.send_command('show-objects', data=objfilter))
+    offset = 0
+    while len(objects['objects']) > 0:
+        list_to_delete = []
+        for i in objects['objects']:
+            obj = {}
+            obj['uid'] = i['uid']
+            list_to_delete.append(obj)
+        del_obj_filter = {}
+        del_obj_filter['objects'] = []
+        del_obj_root = {}
+        del_obj_root['type'] = 'host'
+        del_obj_root['list'] = list_to_delete
+        del_obj_filter['objects'].append(del_obj_root)
 
-resp = apiCall.send_command('add-simple-gateway', data=ssg)
+        resp = apiobj.send_command('delete-objects-batch', data=del_obj_filter)
+        apiobj.watch_task(json.loads(resp)['task-id'])
+        pub_results = apiobj.publish()
+        print(pub_results)
+        objfilter = {}
+        objfilter['in'] = ['name', prefix]
+        objfilter['type'] = 'host'
+        objects = json.loads(apiobj.send_command(
+            'show-objects', data=objfilter))
+
+obj_prefix = "dbtobj_"
+resp = tidy_up_hosts(obj_prefix, apiCall)
 print(resp)
-resp = apiCall.publish()
