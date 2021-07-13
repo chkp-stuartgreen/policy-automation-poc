@@ -50,8 +50,8 @@ vpn_props = {}
 vpn_props['name'] = "S2S_test"
 vpn_props['encryption-method'] = "ikev2 only"
 vpn_props['encryption-suite'] = "suite-b-gcm-256"
-vpn_props['gateways'] = "dummy_gw"
 vpn_props['override-vpn-domains'] = {}
+vpn_props['override-vpn-domains']['gateway'] = "dummy_gw"
 vpn_props['override-vpn-domains']['vpn-domain'] = "S2S_empty_group"
 resp = apiCall.send_command('add-vpn-community-meshed', data = vpn_props)
 print(resp)
