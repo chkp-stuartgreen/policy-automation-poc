@@ -39,7 +39,11 @@ else:
 apiCall = CPAPI(mgmt_params)
 
 # Create an empty group for the VPN domain to force route-based mode
-
+group_name = "S2S_empty_group"
+group = {}
+group['name'] = group_name
+apiCall.send_command('add-group', data= group)
+apiCall.publish()
 
 # Create dict for VPN community properties
 vpn_props = {}
@@ -49,3 +53,7 @@ vpn_props['encryption_suite'] = "suite-b-gcm-256"
 vpn_props['gateways'] = "S2S_peer_a"
 vpn_props['override-vpn-domains'] = {}
 vpn_props['override-vpn-domains']['vpn-domain'] = "S2S_empty_group"
+resp = apiCall.send_command('add-vpn-community-meshed', data = vpn_props)
+print(resp)
+apiCall.publish()
+apiCall.logout()
