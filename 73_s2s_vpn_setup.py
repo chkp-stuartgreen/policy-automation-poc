@@ -35,7 +35,8 @@ elif 'MGMT_USERNAME' and 'MGMT_PASSWORD' in os.environ:
 else:
     print("[ERROR] Missing credentials MGMT_IP, MGMT_API_KEY or MGMT_USERNAME and MGMT_PASSWORD")
     raise SystemExit
-
+print("[WARNING] This script requires an interoperable device to be present and named vpn_peer_a")
+input("[WARNING] Please verify and press enter to continue")
 apiCall = CPAPI(mgmt_params)
 
 # Create an empty group for the VPN domain to force route-based mode
@@ -50,8 +51,12 @@ vpn_props = {}
 vpn_props['name'] = "S2S_test"
 vpn_props['encryption-method'] = "ikev2 only"
 vpn_props['encryption-suite'] = "suite-b-gcm-256"
+vpn_props['gateways'] = "vpn_peer_a"
+vpn_props['shared-secrets'] = {}
+vpn_props['shared-secrets']['external-gateway'] = "vpn_peer_a"
+vpn_props['shared-secrets']['shared-secret'] = "vpn123"
 vpn_props['override-vpn-domains'] = {}
-vpn_props['override-vpn-domains']['gateway'] = "dummy_gw"
+vpn_props['override-vpn-domains']['gateway'] = "vpn_peer_a"
 vpn_props['override-vpn-domains']['vpn-domain'] = "S2S_empty_group"
 resp = apiCall.send_command('add-vpn-community-meshed', data = vpn_props)
 print(resp)
