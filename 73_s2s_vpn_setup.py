@@ -48,7 +48,7 @@ apiCall.publish()
 # Create dict for VPN community properties
 vpn_props = {}
 vpn_props['name'] = "S2S_test"
-vpn_props['encryption-method'] = "ikev2"
+vpn_props['encryption-method'] = "ikev2 only"
 vpn_props['encryption-suite'] = "suite-b-gcm-256"
 vpn_props['gateways'] = "S2S_peer_a"
 vpn_props['override-vpn-domains'] = {}
