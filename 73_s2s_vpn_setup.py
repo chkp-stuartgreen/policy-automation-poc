@@ -49,7 +49,7 @@ apiCall.publish()
 vpn_props = {}
 vpn_props['name'] = "S2S_test"
 vpn_props['encryption-method'] = "ikev2"
-vpn_props['encryption_suite'] = "suite-b-gcm-256"
+vpn_props['encryption-suite'] = "suite-b-gcm-256"
 vpn_props['gateways'] = "S2S_peer_a"
 vpn_props['override-vpn-domains'] = {}
 vpn_props['override-vpn-domains']['vpn-domain'] = "S2S_empty_group"
