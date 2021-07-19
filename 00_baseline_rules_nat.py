@@ -54,7 +54,6 @@ def batch_host_creation(apiobj, obj_prefix):
       batch_objects.append(type)
       batch_dict['objects'] = batch_objects
       resp = apiobj.send_command('add-objects-batch', data=batch_dict)
-      apiobj.watch_task(json.loads(resp)['task-id'])
       resp = apiobj.publish()
       # reset object - not outer loop
       batch_dict = {}
@@ -66,12 +65,42 @@ def batch_host_creation(apiobj, obj_prefix):
   batch_objects.append(type)
   batch_dict['objects'] = batch_objects
   resp = apiobj.send_command('add-objects-batch', data=batch_dict)
-  apiobj.watch_task(json.loads(resp)['task-id'])
   resp = apiobj.publish()
 
-obj_prefix = uuid.uuid4().split('-')[-1][-4:] # Create a random prefix to avoid conflicts, output for tidying later
+def tidy_up_hosts(apiobj, obj_prefix):
+  # Call this function with the object prefix and apiCall object to indiscriminately trash all of the hosts matching that pattern
+  objfilter = {}
+  objfilter['limit'] = 500  # max results - need to page / loop beyond this
+  objfilter['in'] = ['name', obj_prefix]
+  objfilter['type'] = 'host'
+  objects = json.loads(apiobj.send_command('show-objects', data=objfilter))
+  offset = 0
+  while len(objects['objects']) > 0:
+    list_to_delete = []
+    for i in objects['objects']:
+      obj = {}
+      obj['uid'] = i['uid']
+      list_to_delete.append(obj)
+    del_obj_filter = {}
+    del_obj_filter['objects'] = []
+    del_obj_root = {}
+    del_obj_root['type'] = 'host'
+    del_obj_root['list'] = list_to_delete
+    del_obj_filter['objects'].append(del_obj_root)
+    resp = apiobj.send_command('delete-objects-batch', data=del_obj_filter)
+    pub_results = apiobj.publish()
+    print(pub_results)
+    objfilter = {}
+    objfilter['in'] = ['name', prefix]
+    objfilter['type'] = 'host'
+    objects = json.loads(apiobj.send_command(
+        'show-objects', data=objfilter))
+
+obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
-resp = batch_host_creation(apiCall, obj_prefix)
+#resp = batch_host_creation(apiCall, obj_prefix)
+resp = tidy_up_hosts(apiCall, 'facf')
+
