@@ -113,11 +113,8 @@ def create_rules(apiobj, obj_prefix):
     ruleDetails['source'] = obj_prefix + \
       str(ipaddress.IPv4Address(int(ip_starting_address + i)))
     ruleDetails['service'] = 'http'
-    resp = apiobj.send_command('add-access-rule', data=ruleDetails)
-    print(resp)
-    resp = apiobj.publish()
-    print(resp)
-    input("pausing")
+    apiobj.send_command('add-access-rule', data=ruleDetails)
+
     if i % 100 == 0:
       print("[INFO] Publishing batch of 100 rules")
       resp = apiobj.publish()
