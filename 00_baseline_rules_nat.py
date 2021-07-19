@@ -96,7 +96,7 @@ def tidy_up_hosts(apiobj, obj_prefix):
     objects = json.loads(apiobj.send_command(
         'show-objects', data=objfilter))
 
-def create_rules(apiobj, obj_prefix):
+def create_rules(apiobj, obj_prefix, layer_name):
   # Create rules - keeping the logic for creating the hosts to generate the names for rule objects
   # apiCall = CPAPI(mgmt_params) # new session
   starting_address = "10.129.0.1"
@@ -105,7 +105,7 @@ def create_rules(apiobj, obj_prefix):
   
   for i in range(rules_to_create):
     ruleDetails = {}
-    ruleDetails['layer'] = 'Network'
+    ruleDetails['layer'] = layer_name
     ruleDetails['name'] = obj_prefix
     ruleDetails['position'] = {}
     ruleDetails['position']['bottom'] = 'Bulk'
@@ -123,16 +123,12 @@ def create_rules(apiobj, obj_prefix):
   test = apiobj.publish()
   print(test)
 
-def create_nat_rules(apiobj, obj_prefix):
-  if 'MGMT_PKG' not in os.environ:
-    print("[ERROR] Missing MGMT_PKG env var needed to create NAT rules")
-    raise SystemExit
-  else:
-    mgmt_pkg = os.environ['MGMT_PKG']
+def create_nat_rules(apiobj, obj_prefix, package_name):
+  mgmt_pkg = package_name
   # Create rules - keeping the logic for creating the hosts to generate the names for rule objects
   # apiCall = CPAPI(mgmt_params) # new session
   starting_address = "10.129.0.1"
-  rules_to_create = 2000 # Needs to match how many objects you created
+  rules_to_create = 1500 # Needs to match how many objects you created
   ip_starting_address = ipaddress.IPv4Address(starting_address)
   
   for i in range(rules_to_create):
@@ -159,9 +155,10 @@ print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
-#resp = batch_host_creation(apiCall, obj_prefix)
-#resp = create_rules(apiCall, obj_prefix)
-#resp = create_nat_rules(apiCall, obj_prefix)
-resp = create_nat_rules(apiCall, obj_prefix)
+resp = batch_host_creation(apiCall, obj_prefix)
+resp = create_rules(apiCall, obj_prefix, 'Standard_VS1 Network')
+resp = create_nat_rules(apiCall, obj_prefix, 'Standard_VS1')
+print(f'[INFO] Finished - please check in SmartConsole')
+print(f'[INFO] FYI - object prefix is {obj_prefix} to save you scrolling back')
 #resp = tidy_up_hosts(apiCall, 'facf')
 
