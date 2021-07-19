@@ -106,7 +106,7 @@ def create_rules(apiobj, obj_prefix):
   for i in range(rules_to_create):
     ruleDetails = {}
     ruleDetails['layer'] = 'Network'
-    ruleDetails['Name'] = obj_prefix
+    ruleDetails['name'] = obj_prefix
     ruleDetails['position'] = {}
     ruleDetails['position']['bottom'] = 'Bulk'
     ruleDetails['action'] = 'Accept'
