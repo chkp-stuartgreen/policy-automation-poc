@@ -20,7 +20,14 @@ mgmt_params['api_ver'] = '1.7'
 mgmt_params['api_path'] = 'web_api'
 mgmt_params['ip'] = os.environ['MGMT_IP']
 mgmt_params['domain'] = os.environ['DMS_DOMAIN']
-
+if 'MGMT_API_KEY' in os.environ:
+    mgmt_params['api-key'] = os.environ['MGMT_API_KEY']
+elif 'MGMT_USERNAME' and 'MGMT_PASSWORD' in os.environ:
+    mgmt_params['username'] = os.environ['MGMT_USERNAME']
+    mgmt_params['password'] = os.environ['MGMT_PASSWORD']
+else:
+    print("[ERROR] Missing credentials MGMT_IP, MGMT_API_KEY or MGMT_USERNAME and MGMT_PASSWORD")
+    raise SystemExit
 
 def batch_host_creation(apiobj, obj_prefix):
   # Object creation using the batch api (limited to 500 requests per batch)
