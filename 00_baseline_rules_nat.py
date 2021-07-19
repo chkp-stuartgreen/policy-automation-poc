@@ -34,7 +34,7 @@ def batch_host_creation(apiobj, obj_prefix):
   # For a batch delete example see the tidy_up_hosts function
   #apiCall = CPAPI(mgmt_params)
   starting_address = "10.129.0.1"
-  hosts_to_create = 1500
+  hosts_to_create = 2000
   ip_starting_address = ipaddress.IPv4Address(starting_address)
   batch_dict = {}
   batch_objects = []
@@ -96,11 +96,36 @@ def tidy_up_hosts(apiobj, obj_prefix):
     objects = json.loads(apiobj.send_command(
         'show-objects', data=objfilter))
 
-obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] # Create a random prefix to avoid conflicts, output for tidying later
+def create_rules(apiobj, obj_prefix):
+  # Create rules - keeping the logic for creating the hosts to generate the names for rule objects
+  # apiCall = CPAPI(mgmt_params) # new session
+  starting_address = "10.129.0.1"
+  rules_to_create = 2000 # Needs to match how many objects you created
+  ip_starting_address = ipaddress.IPv4Address(starting_address)
+  
+  for i in range(rules_to_create):
+    ruleDetails = {}
+    ruleDetails['layer'] = 'Network'
+    ruleDetails['Name'] = obj_prefix
+    ruleDetails['position'] = {}
+    ruleDetails['position']['bottom'] = 'Bulk'
+    ruleDetails['action'] = 'Accept'
+    ruleDetails['source'] = obj_prefix + \
+      str(ipaddress.IPv4Address(int(ip_starting_address + i)))
+    ruleDetails['service'] = 'http'
+    apiobj.send_command('add-access-rule', data=ruleDetails)
+    if i % 100 == 0:
+      print("[INFO] Publishing batch of 100 rules")
+      apiobj.publish()
+
+  test = apiobj.publish()
+
+obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
-#resp = batch_host_creation(apiCall, obj_prefix)
-resp = tidy_up_hosts(apiCall, 'facf')
+resp = batch_host_creation(apiCall, obj_prefix)
+resp = create_rules(apiCall, obj_prefix)
+#resp = tidy_up_hosts(apiCall, 'facf')
 
