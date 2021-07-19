@@ -91,7 +91,7 @@ def tidy_up_hosts(apiobj, obj_prefix):
     pub_results = apiobj.publish()
     print(pub_results)
     objfilter = {}
-    objfilter['in'] = ['name', prefix]
+    objfilter['in'] = ['name', obj_prefix]
     objfilter['type'] = 'host'
     objects = json.loads(apiobj.send_command(
         'show-objects', data=objfilter))
