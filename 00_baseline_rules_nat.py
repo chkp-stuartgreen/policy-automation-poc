@@ -116,9 +116,11 @@ def create_rules(apiobj, obj_prefix):
     apiobj.send_command('add-access-rule', data=ruleDetails)
     if i % 100 == 0:
       print("[INFO] Publishing batch of 100 rules")
-      apiobj.publish()
+      resp = apiobj.publish()
+      print(resp)
 
   test = apiobj.publish()
+  print(test)
 
 obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
