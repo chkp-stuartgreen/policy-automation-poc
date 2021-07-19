@@ -123,12 +123,45 @@ def create_rules(apiobj, obj_prefix):
   test = apiobj.publish()
   print(test)
 
+def create_nat_rules(apiobj, obj_prefix):
+  if 'MGMT_PKG' not in os.environ:
+    print("[ERROR] Missing MGMT_PKG env var needed to create NAT rules")
+    raise SystemExit
+  else:
+    mgmt_pkg = os.environ['MGMT_PKG']
+  # Create rules - keeping the logic for creating the hosts to generate the names for rule objects
+  # apiCall = CPAPI(mgmt_params) # new session
+  starting_address = "10.129.0.1"
+  rules_to_create = 2000 # Needs to match how many objects you created
+  ip_starting_address = ipaddress.IPv4Address(starting_address)
+  
+  for i in range(rules_to_create):
+    ruleDetails = {}
+    ruleDetails['package'] = mgmt_pkg # Only one NAT layer / rulebase per package
+    ruleDetails['name'] = obj_prefix
+    ruleDetails['position'] = {}
+    ruleDetails['position']['bottom'] = 'Bulk'
+    ruleDetails['original-source'] = obj_prefix + \
+      str(ipaddress.IPv4Address(int(ip_starting_address + i)))
+    ruleDetails['original-service'] = 'http'
+    apiobj.send_command('add-nat-rule', data=ruleDetails)
+
+    if i % 100 == 0:
+      print("[INFO] Publishing batch of 100 rules")
+      resp = apiobj.publish()
+      print(resp)
+
+  test = apiobj.publish()
+  print(test)
+
 obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
-resp = batch_host_creation(apiCall, obj_prefix)
-resp = create_rules(apiCall, obj_prefix)
+#resp = batch_host_creation(apiCall, obj_prefix)
+#resp = create_rules(apiCall, obj_prefix)
+#resp = create_nat_rules(apiCall, obj_prefix)
+resp = create_nat_rules(apiCall, obj_prefix)
 #resp = tidy_up_hosts(apiCall, 'facf')
 
