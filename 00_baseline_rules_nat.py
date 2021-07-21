@@ -167,9 +167,9 @@ def delete_access_rules(apiobj, obj_prefix, layer_name):
     rule_uids_to_delete += filtered_rules_2
     req_params['offset'] += batch_size
     rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
-  for i in rule_uids_to_delete:
+  for i,v in enumerate(rule_uids_to_delete):
     del_req_payload = {}
-    del_req_payload['uid'] = i
+    del_req_payload['uid'] = v
     del_req_payload['layer'] = layer_name
     resp = apiobj.send_command('delete-access-rule', data=del_req_payload)
     if i % 100 == 0:
@@ -203,10 +203,10 @@ def delete_nat_rules(apiobj, obj_prefix, package_name):
     req_params['offset'] += batch_size
     rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
   # Extra step to retrieve name from show-nat-rule because rulebase doesn't have it
-  for i in rule_uids:
+  for i,v in enumerate(rule_uids):
     req_params = {}
     req_params['package'] = package_name
-    req_params['uid'] = i
+    req_params['uid'] = v
     resp = json.loads(apiobj.send_command('show-nat-rule', data=req_params))
     if resp['name'] == obj_prefix:
       response = apiobj.send_command('delete-nat-rule', req_params)
