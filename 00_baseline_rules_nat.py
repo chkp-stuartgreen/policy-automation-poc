@@ -161,17 +161,20 @@ def delete_access_rules(apiobj, obj_prefix, layer_name):
   rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
   #filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
   #filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
-  while 'to' in rules and rules['to'] < rules['total']:
+  while 'to' in rules:
     filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
     filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
     rule_uids_to_delete += filtered_rules_2
     req_params['offset'] += batch_size
     rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
+  print(f"[INFO] Rules")
+  print(rule_uids_to_delete)
   for i,v in enumerate(rule_uids_to_delete):
     del_req_payload = {}
     del_req_payload['uid'] = v
     del_req_payload['layer'] = layer_name
     resp = apiobj.send_command('delete-access-rule', data=del_req_payload)
+    print(resp)
     if i % 100 == 0:
       apiobj.publish()
     # Get more objects and repeat the cycle
@@ -196,12 +199,12 @@ def delete_nat_rules(apiobj, obj_prefix, package_name):
   rules = json.loads(apiobj.send_command('show-nat-rulebase', data=req_params))
   #filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
   #filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
-  while 'to' in rules and rules['to'] < rules['total']:
+  while 'to' in rules:
     filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
     filtered_rules_2 = [i['uid'] for i in filtered_rules_1]
     rule_uids += filtered_rules_2
     req_params['offset'] += batch_size
-    rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
+    rules = json.loads(apiobj.send_command('show-nat-rulebase', data=req_params))
   # Extra step to retrieve name from show-nat-rule because rulebase doesn't have it
   for i,v in enumerate(rule_uids):
     req_params = {}
@@ -210,13 +213,14 @@ def delete_nat_rules(apiobj, obj_prefix, package_name):
     resp = json.loads(apiobj.send_command('show-nat-rule', data=req_params))
     if resp['name'] == obj_prefix:
       response = apiobj.send_command('delete-nat-rule', req_params)
+      print(response)
     if i % 100 == 0:
       apiobj.publish()
   apiobj.publish()
 
-obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
-print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
-print('[INFO] Make a note of this to tidy up the hosts / rules later')
+#obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
+#print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
+#print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
 #resp = batch_host_creation(apiCall, obj_prefix)
@@ -227,3 +231,4 @@ apiCall = CPAPI(mgmt_params)
 #resp = tidy_up_hosts(apiCall, 'facf')
 resp = delete_access_rules(apiCall, '6079_', 'Standard_VS3 Network')
 #resp = delete_nat_rules(apiCall, '6079_', 'Standard_VS3')
+apiCall.logout()
