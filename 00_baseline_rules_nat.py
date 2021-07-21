@@ -150,15 +150,41 @@ def create_nat_rules(apiobj, obj_prefix, package_name):
   test = apiobj.publish()
   print(test)
 
+def delete_access_rules(apiobj, obj_prefix, layer_name):
+  batch_size = 100 # maximum size is 500
+  req_params = {}
+  req_params['name'] = layer_name
+  req_params['offset'] = 0
+  req_params['limit'] = 100 # max is 500 - but will affect performance
+  rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
+  filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
+  filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
+  while len(filtered_rules_2) > 0: # while we get results, keep on deletin'
+    for i in filtered_rules_2:
+      del_req_payload = {}
+      del_req_payload['uid'] = i
+      del_req_payload['layer'] = layer_name
+      resp = apiobj.send_command('delete-access-rule', data=del_req_payload)
+    apiobj.publish()
+    # Get more objects and repeat the cycle
+    req_params = {}
+    req_params['name'] = layer_name
+    req_params['offset'] = 0
+    req_params['limit'] = 100 # max is 500 - but will affect performance
+    rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
+    filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
+    filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
+
+
 obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
 apiCall = CPAPI(mgmt_params)
-resp = batch_host_creation(apiCall, obj_prefix)
-resp = create_rules(apiCall, obj_prefix, 'Standard_VS1 Network')
-resp = create_nat_rules(apiCall, obj_prefix, 'Standard_VS1')
-print(f'[INFO] Finished - please check in SmartConsole')
-print(f'[INFO] FYI - object prefix is {obj_prefix} to save you scrolling back')
+#resp = batch_host_creation(apiCall, obj_prefix)
+#resp = create_rules(apiCall, obj_prefix, 'Standard_VS1 Network')
+#resp = create_nat_rules(apiCall, obj_prefix, 'Standard_VS1')
+#print(f'[INFO] Finished - please check in SmartConsole')
+#print(f'[INFO] FYI - object prefix is {obj_prefix} to save you scrolling back')
 #resp = tidy_up_hosts(apiCall, 'facf')
-
+resp = delete_access_rules(apiCall, '6079_', 'Standard_VS2 Network')
