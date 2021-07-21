@@ -168,13 +168,13 @@ def delete_access_rules(apiobj, obj_prefix, layer_name):
     req_params['offset'] += batch_size
     rules = json.loads(apiobj.send_command('show-access-rulebase', data=req_params))
   print(f"[INFO] Rules")
-  print(rule_uids_to_delete)
+  #print(rule_uids_to_delete)
   for i,v in enumerate(rule_uids_to_delete):
     del_req_payload = {}
     del_req_payload['uid'] = v
     del_req_payload['layer'] = layer_name
     resp = apiobj.send_command('delete-access-rule', data=del_req_payload)
-    print(resp)
+    #print(resp)
     if i % 100 == 0:
       apiobj.publish()
     # Get more objects and repeat the cycle
@@ -213,22 +213,46 @@ def delete_nat_rules(apiobj, obj_prefix, package_name):
     resp = json.loads(apiobj.send_command('show-nat-rule', data=req_params))
     if resp['name'] == obj_prefix:
       response = apiobj.send_command('delete-nat-rule', req_params)
-      print(response)
+      #print(response)
     if i % 100 == 0:
       apiobj.publish()
   apiobj.publish()
 
+
+
+apiCall = CPAPI(mgmt_params)
+
+# Uncomment each of these lines as required and then run with 
+# python3 00_baseline_rules_nat.py
+# Make sure you have the environment variables set for
+# MGMT_API_KEY, MGMT_IP and DMS_DOMAIN
+
+# Enable these rules to create 2000 hosts, 2000 firewall rules and 1500 NAT rules
+# You must have a section in the access and NAT policies called "Bulk"
+# or this will fail
+# START SECTION #
 #obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 #print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
 #print('[INFO] Make a note of this to tidy up the hosts / rules later')
 
-apiCall = CPAPI(mgmt_params)
 #resp = batch_host_creation(apiCall, obj_prefix)
 #resp = create_rules(apiCall, obj_prefix, 'Standard_VS1 Network')
 #resp = create_nat_rules(apiCall, obj_prefix, 'Standard_VS1')
 #print(f'[INFO] Finished - please check in SmartConsole')
 #print(f'[INFO] FYI - object prefix is {obj_prefix} to save you scrolling back')
-#resp = tidy_up_hosts(apiCall, 'facf')
-resp = delete_access_rules(apiCall, '6079_', 'Standard_VS3 Network')
+# END SECTION #
+
+
+# These rules are if you need to use the API to delete the rules in the Bulk sections
+# for performance or other reasons.
+# You need to provide the access layer name for delete_access_rules and the rule / host prefix
+# output with the previous command (or from the rulebase)
+# START SECTION #
+
+#resp = delete_access_rules(apiCall, '6079_', 'Standard_VS3 Network')
 #resp = delete_nat_rules(apiCall, '6079_', 'Standard_VS3')
+#resp = tidy_up_hosts(apiCall, '6079_')
+
+# END SECTION #
+
 apiCall.logout()
