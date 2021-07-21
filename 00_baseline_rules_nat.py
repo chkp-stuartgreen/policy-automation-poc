@@ -175,6 +175,31 @@ def delete_access_rules(apiobj, obj_prefix, layer_name):
     filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
     filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
 
+def delete_nat_rules(apiobj, obj_prefix, package_name):
+  batch_size = 100 # maximum size is 500
+  req_params = {}
+  req_params['package'] = package_name
+  req_params['offset'] = 0
+  req_params['limit'] = 100 # max is 500 - but will affect performance
+  rules = json.loads(apiobj.send_command('show-nat-rulebase', data=req_params))
+  filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
+  filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
+  while len(filtered_rules_2) > 0: # while we get results, keep on deletin'
+    for i in filtered_rules_2:
+      del_req_payload = {}
+      del_req_payload['uid'] = i
+      del_req_payload['package'] = package_name
+      resp = apiobj.send_command('delete-nat-rule', data=del_req_payload)
+    apiobj.publish()
+    # Get more objects and repeat the cycle
+    req_params = {}
+    req_params['name'] = package_name
+    req_params['offset'] = 0
+    req_params['limit'] = 100 # max is 500 - but will affect performance
+    rules = json.loads(apiobj.send_command('show-nat-rulebase', data=req_params))
+    filtered_rules_1 = [i for i in rules['rulebase'] if i['name'] == 'Bulk'][0]['rulebase']
+    filtered_rules_2 = [i['uid'] for i in filtered_rules_1 if i['name'] == obj_prefix]
+
 
 obj_prefix = str(uuid.uuid4()).split('-')[-1][-4:] + "_" # Create a random prefix to avoid conflicts, output for tidying later
 print(f'[INFO] Creating objects with a prefix of {obj_prefix}')
@@ -187,4 +212,5 @@ apiCall = CPAPI(mgmt_params)
 #print(f'[INFO] Finished - please check in SmartConsole')
 #print(f'[INFO] FYI - object prefix is {obj_prefix} to save you scrolling back')
 #resp = tidy_up_hosts(apiCall, 'facf')
-resp = delete_access_rules(apiCall, '6079_', 'Standard_VS2 Network')
+#resp = delete_access_rules(apiCall, '6079_', 'Standard_VS2 Network')
+resp = delete_nat_rules(apiCall, '6079_', 'Standard_VS2')
