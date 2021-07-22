@@ -32,7 +32,7 @@ apiCall = CPAPI(mgmt_params)
 
 # We need the Log UID in order to retrieve the attachment
 data = {}
-data['id'] = "4b177cd1-a854-51c6-60e80606700000004"
+data['id'] = "4b177cd1-a854-51c6-60e8-606700000004"
 
 response = apiCall.send_command('get-attachment', data=data)
 
